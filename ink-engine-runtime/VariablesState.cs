@@ -78,7 +78,7 @@ namespace Ink.Runtime
                 Runtime.Object varContents;
 
                 if (patch != null && patch.TryGetGlobal(variableName, out varContents))
-                    return (varContents as Runtime.Value).valueObject;
+                    return RefreshListOrigins((varContents as Runtime.Value).valueObject);
 
                 // Search main dictionary first.
                 // If it's not found, it might be because the story content has changed,
@@ -86,7 +86,7 @@ namespace Ink.Runtime
                 // Should really warn somehow, but it's difficult to see how...!
                 if ( _globalVariables.TryGetValue (variableName, out varContents) || 
                      _defaultGlobalVariables.TryGetValue(variableName, out varContents) )
-                    return (varContents as Runtime.Value).valueObject;
+                    return RefreshListOrigins((varContents as Runtime.Value).valueObject);
                 else {
                     return null;
                 }
@@ -107,6 +107,23 @@ namespace Ink.Runtime
                 SetGlobal (variableName, val);
             }
         }
+
+        private object RefreshListOrigins(object obj)
+         {
+             if (obj != null) 
+             {
+                 var inkList = obj as InkList;
+                 if (inkList != null) 
+                 {
+                     if (inkList.origins == null)
+                     {
+                         inkList.RefreshOrigins(_listDefsOrigin);
+                     }
+                 }
+             }
+
+             return obj;
+         }
 
 		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
 		{
